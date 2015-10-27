@@ -1,21 +1,23 @@
 /*
  * Copyright 2014 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 package de.codecentric.boot.admin.config;
 
 import java.util.Arrays;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -40,68 +42,88 @@ import de.codecentric.boot.admin.web.BasicAuthHttpRequestInterceptor;
  */
 @Configuration
 public class SpringBootAdminClientAutoConfiguration {
-
+	
 	@ConditionalOnProperty("spring.boot.admin.url")
-	@EnableConfigurationProperties({ AdminProperties.class, AdminClientProperties.class })
+	@EnableConfigurationProperties({ AdminProperties.class,
+			AdminClientProperties.class })
 	public static class AdminClientRegistrationConfig {
+		
+		private final static ScheduledExecutorService	SCHEDULE	= Executors
+																			.newSingleThreadScheduledExecutor();
+		
 		/**
 		 * Task that registers the application at the spring-boot-admin
 		 * application.
 		 */
 		@Bean
 		@ConditionalOnMissingBean
-		public ApplicationRegistrator registrator(AdminProperties admin, AdminClientProperties client) {
-			return new ApplicationRegistrator(createRestTemplate(admin), admin, client);
+		public ApplicationRegistrator registrator(AdminProperties props,
+				AdminClientProperties clientProps) {
+			ApplicationRegistrator registrator = new ApplicationRegistrator(
+					createRestTemplate(props), props, clientProps, SCHEDULE);
+			registrator.startScheduled();
+			return registrator;
 		}
-
+		
+		// create restTemplate
 		protected RestTemplate createRestTemplate(AdminProperties admin) {
 			RestTemplate template = new RestTemplate();
-			template.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-
+			template.getMessageConverters().add(
+					new MappingJackson2HttpMessageConverter());
+			
 			if (admin.getUsername() != null) {
-				template.setInterceptors(Arrays.<ClientHttpRequestInterceptor> asList(
-						new BasicAuthHttpRequestInterceptor(admin.getUsername(), admin.getPassword())));
+				template.setInterceptors(Arrays
+						.<ClientHttpRequestInterceptor> asList(new BasicAuthHttpRequestInterceptor(
+								admin.getUsername(), admin.getPassword())));
 			}
-
+			
 			return template;
 		}
-
+		
 		/**
 		 * TaskRegistrar that triggers the RegistratorTask every ten seconds.
 		 */
-		@Bean
-		public ScheduledTaskRegistrar taskRegistrar(final ApplicationRegistrator registrator, AdminProperties admin,
-				final AdminClientProperties client) {
+		// @Bean
+		public ScheduledTaskRegistrar taskRegistrar(
+				final ApplicationRegistrator registrator,
+				AdminProperties props, final AdminClientProperties clientProps) {
 			ScheduledTaskRegistrar registrar = new ScheduledTaskRegistrar();
 			Runnable registratorTask = new Runnable() {
 				@Override
 				public void run() {
-					if (client.isServerInitialized()) {
-						registrator.register();
+					try {
+						if (clientProps.isServerInitialized()) {
+							registrator.register();
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
 					}
 				}
 			};
-
-			registrar.addFixedRateTask(registratorTask, admin.getPeriod());
+			
+			// addFixedRateTask
+			// addFixedDelayTask
+			registrar.addFixedDelayTask(registratorTask, props.getPeriod());
 			return registrar;
 		}
-
+		
 		/**
 		 * ApplicationListener triggering registration after refresh/shutdown
 		 */
 		@Bean
 		public RegistrationApplicationListener registrationListener(
 				ApplicationRegistrator registrator, AdminProperties admin) {
-			return new RegistrationApplicationListener(admin, registrator);
+			return new RegistrationApplicationListener(admin, registrator,
+					SCHEDULE);
 		}
-
+		
 	}
-
+	
 	@Configuration
 	@ConditionalOnExpression("${endpoints.logfile.enabled:true}")
 	@ConditionalOnProperty("logging.file")
 	public static class LogfileEndpointAutoConfiguration {
-
+		
 		/**
 		 * Exposes the logfile as acutator endpoint
 		 */
@@ -110,5 +132,5 @@ public class SpringBootAdminClientAutoConfiguration {
 			return new LogfileMvcEndpoint();
 		}
 	}
-
+	
 }

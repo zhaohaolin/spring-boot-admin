@@ -1,17 +1,17 @@
 /*
  * Copyright 2014 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 package de.codecentric.boot.admin.controller;
 
@@ -37,16 +37,18 @@ import de.codecentric.boot.admin.registry.ApplicationRegistry;
 @RestController
 @RequestMapping(value = RegistryController.PATH)
 public class RegistryController {
-	public static final String PATH = "/api/applications";
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(RegistryController.class);
-
-	private final ApplicationRegistry registry;
-
+	
+	public static final String			PATH	= "/api/applications";
+	
+	private static final Logger			LOGGER	= LoggerFactory
+														.getLogger(RegistryController.class);
+	
+	private final ApplicationRegistry	registry;
+	
 	public RegistryController(ApplicationRegistry registry) {
 		this.registry = registry;
 	}
-
+	
 	/**
 	 * Register an application within this admin application.
 	 *
@@ -57,25 +59,27 @@ public class RegistryController {
 	public ResponseEntity<Application> register(@RequestBody Application app) {
 		LOGGER.debug("Register application {}", app.toString());
 		Application registeredApp = registry.register(app);
-		return new ResponseEntity<Application>(registeredApp, HttpStatus.CREATED);
+		return new ResponseEntity<Application>(registeredApp,
+				HttpStatus.CREATED);
 	}
-
+	
 	/**
 	 * List all registered applications with name
+	 * 
 	 * @param name the name to search for
 	 * @return List
 	 */
 	@RequestMapping(method = RequestMethod.GET)
-	public Collection<Application> applications(@RequestParam(value = "name", required = false) String name) {
+	public Collection<Application> applications(
+			@RequestParam(value = "name", required = false) String name) {
 		LOGGER.debug("Deliver registered applications with name= {}", name);
 		if (name == null || name.isEmpty()) {
 			return registry.getApplications();
-		}
-		else {
+		} else {
 			return registry.getApplicationsByName(name);
 		}
 	}
-
+	
 	/**
 	 * Get a single application out of the registry.
 	 *
@@ -89,10 +93,11 @@ public class RegistryController {
 		if (application != null) {
 			return new ResponseEntity<Application>(application, HttpStatus.OK);
 		} else {
-			return new ResponseEntity<Application>(application, HttpStatus.NOT_FOUND);
+			return new ResponseEntity<Application>(application,
+					HttpStatus.NOT_FOUND);
 		}
 	}
-
+	
 	/**
 	 * Unregister an application within this admin application.
 	 *
@@ -109,5 +114,5 @@ public class RegistryController {
 			return new ResponseEntity<Application>(HttpStatus.NOT_FOUND);
 		}
 	}
-
+	
 }

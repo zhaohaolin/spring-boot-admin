@@ -1,17 +1,17 @@
 /*
  * Copyright 2014 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 package de.codecentric.boot.admin.config;
 
@@ -51,30 +51,31 @@ import de.codecentric.boot.admin.zuul.ApplicationRouteRefreshListener;
 @Configuration
 @EnableConfigurationProperties(ZuulProperties.class)
 public class RevereseZuulProxyConfiguration {
-
+	
 	@Autowired(required = false)
-	private TraceRepository traces;
-
+	private TraceRepository		traces;
+	
 	@Autowired
-	private ZuulProperties zuulProperties;
-
+	private ZuulProperties		zuulProperties;
+	
 	@Autowired
-	private ServerProperties server;
-
+	private ServerProperties	server;
+	
 	@Autowired
-	private ApplicationRegistry registry;
-
+	private ApplicationRegistry	registry;
+	
 	@Bean
 	public ApplicationRouteLocator routeLocator() {
-		return new ApplicationRouteLocator(this.server.getServletPrefix(), registry, this.zuulProperties,
-				RegistryController.PATH);
+		return new ApplicationRouteLocator(this.server.getServletPrefix(),
+				registry, this.zuulProperties, RegistryController.PATH);
 	}
-
+	
 	@Bean
 	public PreDecorationFilter preDecorationFilter() {
-		return new PreDecorationFilter(routeLocator(), this.zuulProperties.isAddProxyHeaders());
+		return new PreDecorationFilter(routeLocator(),
+				this.zuulProperties.isAddProxyHeaders());
 	}
-
+	
 	@Bean
 	public SimpleHostRoutingFilter simpleHostRoutingFilter() {
 		ProxyRequestHelper helper = new ProxyRequestHelper();
@@ -83,76 +84,79 @@ public class RevereseZuulProxyConfiguration {
 		}
 		return new SimpleHostRoutingFilter(helper);
 	}
-
+	
+	// @Bean
+	// public ZuulController zuulController() {
+	// return new ZuulController();
+	// }
+	
 	@Bean
-	public ZuulController zuulController() {
-		return new ZuulController();
+	public ZuulHandlerMapping zuulHandlerMapping(RouteLocator routes,
+			ZuulController zuulController) {
+		return new ZuulHandlerMapping(routes, zuulController);
 	}
-
-	@Bean
-	public ZuulHandlerMapping zuulHandlerMapping(RouteLocator routes) {
-		return new ZuulHandlerMapping(routes, zuulController());
-	}
-
+	
 	// pre filters
-
+	
 	@Bean
 	public FormBodyWrapperFilter formBodyWrapperFilter() {
 		return new FormBodyWrapperFilter();
 	}
-
+	
 	@Bean
 	public DebugFilter debugFilter() {
 		return new DebugFilter();
 	}
-
+	
 	@Bean
 	public Servlet30WrapperFilter servlet30WrapperFilter() {
 		return new Servlet30WrapperFilter();
 	}
-
+	
 	// post filters
-
+	
 	@Bean
 	public SendResponseFilter sendResponseFilter() {
 		return new SendResponseFilter();
 	}
-
+	
 	@Bean
 	public SendErrorFilter sendErrorFilter() {
 		return new SendErrorFilter();
 	}
-
+	
 	@Configuration
 	protected static class ZuulFilterConfiguration {
-
+		
 		@Autowired
-		private Map<String, ZuulFilter> filters;
-
+		private Map<String, ZuulFilter>	filters;
+		
 		@Bean
 		public ZuulFilterInitializer zuulFilterInitializer() {
 			return new ZuulFilterInitializer(this.filters);
 		}
-
+		
 	}
-
+	
 	@Bean
-	public ApplicationRouteRefreshListener applicationRouteRefreshListener() {
-		return new ApplicationRouteRefreshListener(routeLocator(), zuulHandlerMapping(routeLocator()));
+	public ApplicationRouteRefreshListener applicationRouteRefreshListener(
+			ZuulController zuulController) {
+		return new ApplicationRouteRefreshListener(routeLocator(),
+				zuulHandlerMapping(routeLocator(), zuulController));
 	}
-
+	
 	@Configuration
 	@ConditionalOnClass(Endpoint.class)
 	protected static class RoutesEndpointConfiguration {
-
+		
 		@Autowired
-		private ProxyRouteLocator routeLocator;
-
+		private ProxyRouteLocator	routeLocator;
+		
 		@Bean
 		public RoutesEndpoint zuulEndpoint() {
 			return new RoutesEndpoint(this.routeLocator);
 		}
-
+		
 	}
-
+	
 }
