@@ -12,49 +12,50 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  */
 public class StatusInfo implements Serializable {
-	private static final long serialVersionUID = 1L;
-
-	private final String status;
-	private final long timestamp;
-
+	private static final long	serialVersionUID	= 1L;
+	
+	private final String		status;
+	private final long			timestamp;
+	
 	protected StatusInfo(String status, long timestamp) {
-		this.status= status.toUpperCase();
+		this.status = status.toUpperCase();
 		this.timestamp = timestamp;
 	}
-
+	
 	public static StatusInfo valueOf(String statusCode) {
 		return new StatusInfo(statusCode, System.currentTimeMillis());
 	}
-
+	
 	@JsonCreator
-	public static StatusInfo valueOf(@JsonProperty("status") String statusCode, @JsonProperty("timestamp") long timestamp) {
+	public static StatusInfo valueOf(@JsonProperty("status") String statusCode,
+			@JsonProperty("timestamp") long timestamp) {
 		return new StatusInfo(statusCode, timestamp);
 	}
-
+	
 	public static StatusInfo ofUnknown() {
 		return valueOf("UNKNOWN");
 	}
-
+	
 	public static StatusInfo ofUp() {
 		return valueOf("UP");
 	}
-
+	
 	public static StatusInfo ofDown() {
 		return valueOf("DOWN");
 	}
-
+	
 	public static StatusInfo ofOffline() {
 		return valueOf("OFFLINE");
 	}
-
+	
 	public String getStatus() {
 		return status;
 	}
-
+	
 	public long getTimestamp() {
 		return timestamp;
 	}
-
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -62,7 +63,7 @@ public class StatusInfo implements Serializable {
 		result = prime * result + ((status == null) ? 0 : status.hashCode());
 		return result;
 	}
-
+	
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -84,5 +85,5 @@ public class StatusInfo implements Serializable {
 		}
 		return true;
 	}
-
+	
 }

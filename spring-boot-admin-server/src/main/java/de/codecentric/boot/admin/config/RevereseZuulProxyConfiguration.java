@@ -85,10 +85,10 @@ public class RevereseZuulProxyConfiguration {
 		return new SimpleHostRoutingFilter(helper);
 	}
 	
-	// @Bean
-	// public ZuulController zuulController() {
-	// return new ZuulController();
-	// }
+	@Bean
+	public ZuulController zuulController() {
+		return new ZuulController();
+	}
 	
 	@Bean
 	public ZuulHandlerMapping zuulHandlerMapping(RouteLocator routes,

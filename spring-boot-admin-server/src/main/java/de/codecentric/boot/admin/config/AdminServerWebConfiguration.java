@@ -30,7 +30,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
@@ -114,6 +113,9 @@ public class AdminServerWebConfiguration extends WebMvcConfigurerAdapter
 		return new HashingApplicationUrlIdGenerator();
 	}
 	
+	@Value("${spring.boot.admin.monitor.period:60000}")
+	private long	monitorPeriod;
+	
 	@Bean
 	@ConditionalOnMissingBean
 	@ConfigurationProperties("spring.boot.admin.monitor")
@@ -122,12 +124,18 @@ public class AdminServerWebConfiguration extends WebMvcConfigurerAdapter
 		template.getMessageConverters().add(
 				new MappingJackson2HttpMessageConverter());
 		template.setErrorHandler(new DefaultResponseErrorHandler() {
+			
 			@Override
 			protected boolean hasError(HttpStatus statusCode) {
 				return false;
 			}
+			
 		});
-		return new StatusUpdater(template, store);
+		
+		StatusUpdater updater = new StatusUpdater(template, store,
+				monitorPeriod);
+		updater.updateStatusForAllApplications();
+		return updater;
 	}
 	
 	@Bean
@@ -140,24 +148,6 @@ public class AdminServerWebConfiguration extends WebMvcConfigurerAdapter
 				updater.updateStatus(event.getApplication());
 			}
 		};
-	}
-	
-	@Bean
-	public ScheduledTaskRegistrar updateTaskRegistrar(
-			final StatusUpdater updater,
-			@Value("${spring.boot.admin.monitor.period:60000}") long monitorPeriod) {
-		ScheduledTaskRegistrar registrar = new ScheduledTaskRegistrar();
-		Runnable registratorTask = new Runnable() {
-			@Override
-			public void run() {
-				updater.updateStatusForAllApplications();
-			}
-		};
-		
-		// addFixedRateTask
-		// addFixedDelayTask
-		registrar.addFixedDelayTask(registratorTask, monitorPeriod);
-		return registrar;
 	}
 	
 	@Bean
