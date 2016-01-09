@@ -54,7 +54,7 @@ public class ApplicationRegistry implements ApplicationEventPublisherAware {
 	
 	/**
 	 * Register application.
-	 *
+	 * 
 	 * @param application application to be registered.
 	 * @return the registered application.
 	 */
@@ -87,7 +87,7 @@ public class ApplicationRegistry implements ApplicationEventPublisherAware {
 					registering));
 		} else {
 			if (registering.getId().equals(replaced.getId())) {
-				LOGGER.debug("Application {} refreshed", registering);
+				LOGGER.info("Application {} refreshed", registering);
 			} else {
 				LOGGER.warn("Application {} replaced by Application {}",
 						registering, replaced);
@@ -106,7 +106,7 @@ public class ApplicationRegistry implements ApplicationEventPublisherAware {
 	
 	/**
 	 * Checks the syntax of the given URL.
-	 *
+	 * 
 	 * @param url The URL.
 	 * @return true, if valid.
 	 */
@@ -121,7 +121,7 @@ public class ApplicationRegistry implements ApplicationEventPublisherAware {
 	
 	/**
 	 * Get a list of all registered applications.
-	 *
+	 * 
 	 * @return List of all applications.
 	 */
 	public Collection<Application> getApplications() {
@@ -130,7 +130,7 @@ public class ApplicationRegistry implements ApplicationEventPublisherAware {
 	
 	/**
 	 * Get a list of all registered applications.
-	 *
+	 * 
 	 * @param name the name to search for.
 	 * @return List of applications with the given name.
 	 */
@@ -140,7 +140,7 @@ public class ApplicationRegistry implements ApplicationEventPublisherAware {
 	
 	/**
 	 * Get a specific application inside the registry.
-	 *
+	 * 
 	 * @param id Id.
 	 * @return Application.
 	 */
@@ -150,7 +150,7 @@ public class ApplicationRegistry implements ApplicationEventPublisherAware {
 	
 	/**
 	 * Remove a specific application from registry
-	 *
+	 * 
 	 * @param id the applications id to unregister
 	 * @return the unregistered Application
 	 */
